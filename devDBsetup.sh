@@ -30,4 +30,4 @@ unzip master.zip
 cd IT490-master/
 composer update
 
-curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up --auth-key=tskey-auth-kkjULnt1ru11CNTRL-PahDbksxXmhsEG46HaNbmh8UxqZsK8BH \  --hostname=dev-db
+curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up tskey-auth-k4XGWw1sYt11CNTRL-ue3UT1cVAyHbwTgk6JtDyHtuX8UwNovk2 \  --hostname=dev-db
