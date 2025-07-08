@@ -1,0 +1,245 @@
+/* Registration Page Styles */
+.main-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
+  color: white;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* Animated background elements */
+.main-container::before,
+.main-container::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+  filter: blur(80px);
+  opacity: 0.2;
+  animation: pulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.main-container::before {
+  top: -160px;
+  right: -160px;
+  width: 320px;
+  height: 320px;
+  background: #a855f7;
+  z-index: 1;
+}
+
+.main-container::after {
+  bottom: -160px;
+  left: -160px;
+  width: 320px;
+  height: 320px;
+  background: #06b6d4;
+  z-index: 1;
+  animation-delay: 2s;
+}
+
+/* Additional orb */
+.main-container .form-container::before {
+  content: '';
+  position: fixed;
+  top: 160px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 240px;
+  background: #ec4899;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+  filter: blur(80px);
+  opacity: 0.2;
+  animation: pulse 4s ease-in-out infinite;
+  animation-delay: 1s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.3; }
+}
+
+.form-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 500px;
+  background: rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 24px;
+  padding: 3rem 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.form-container h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  background: linear-gradient(to right, #a78bfa, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Add subtitle after h2 */
+.form-container h2::after {
+  content: 'Create your account to start your trivia journey';
+  display: block;
+  color: #d1d5db;
+  font-size: 1rem;
+  font-weight: normal;
+  opacity: 0.8;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: none;
+  -webkit-text-fill-color: #d1d5db;
+}
+
+.form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-container input {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 12px;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-container input::placeholder {
+  color: #9ca3af;
+}
+
+.form-container input:focus {
+  outline: none;
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.form-container input:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+}
+
+.form-container button {
+  padding: 1rem 2rem;
+  background: linear-gradient(to right, #7c3aed, #0891b2);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.form-container button:hover {
+  box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.25);
+  transform: translateY(-2px);
+}
+
+.form-container button:active {
+  transform: translateY(0);
+}
+
+/* Remove old opacity class styling */
+.opacity {
+  opacity: 1 !important;
+}
+
+/* Add terms text before button */
+.form-container form::after {
+  content: 'By creating an account, you agree to our Terms of Service and Privacy Policy';
+  color: #9ca3af;
+  font-size: 0.75rem;
+  text-align: center;
+  line-height: 1.4;
+  margin-top: -0.5rem;
+  order: 10; /* Place before button */
+}
+
+.form-container button {
+  order: 11; /* Place after terms */
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .main-container {
+    padding: 1rem;
+  }
+  
+  .form-container {
+    padding: 2rem 1.5rem;
+  }
+  
+  .form-container h2 {
+    font-size: 1.75rem;
+  }
+  
+  .form-container input {
+    padding: 0.875rem 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-container {
+    padding: 1.5rem 1rem;
+    max-width: 100%;
+  }
+  
+  .form-container h2 {
+    font-size: 1.5rem;
+  }
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.message.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #86efac;
+}
+
+.message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.form-container input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-container button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
