@@ -1,9 +1,9 @@
 import React from 'react'
-import ProfilePanel from "../components/ProfilePage.js"
+import ProfilePage from "../components/ProfilePage.js"
 
 function Profile(){
     return (
-        <ProfilePanel />
+        <ProfilePage />
     );
 }
 export default Profile;

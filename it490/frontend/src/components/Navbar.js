@@ -46,59 +46,32 @@ export default function Navbar() {
     logout();
     setUserLoggedIn(false);
     setCurrentUser(null);
-    navigate('/');
+    navigate('/login');
   };
 
   return (
     <nav className={`navbar ${isScrolled ? 'navbar-scrolled' : ''}`}>
       <div className="nav-container">
         <div className="nav-content">
-          <button 
-            onClick={() => navigate('/')} 
-            className="logo"
-            style={{border: 'none', background: 'none', cursor: 'pointer'}}
-          >
-            TriviaGame
-          </button>
+          <button onClick={() => navigate('/')} className="logo">TriviaGame</button>
           
           <div className="nav-menu">
-            <button 
-              onClick={() => navigate('/')} 
-              className="nav-link"
-              style={{border: 'none', background: 'none', cursor: 'pointer'}}
-            >
-              Home
-            </button>
+            <button onClick={() => navigate('/')} className="nav-link">Home</button>
             
-            <button 
-              onClick={() => navigate('/games')} 
-              className="nav-link"
-              style={{border: 'none', background: 'none', cursor: 'pointer'}}
-            >
-              Games
-            </button>
-            
-            <button 
-              onClick={() => navigate('/leaderboard')} 
-              className="nav-link"
-              style={{border: 'none', background: 'none', cursor: 'pointer'}}
-            >
-              Leaderboard
-            </button>
-
             {userLoggedIn ? (
               <>
                 <button 
                   onClick={() => navigate('/profile')} 
                   className="nav-link"
-                  style={{border: 'none', background: 'none', cursor: 'pointer'}}
                 >
-                  {currentUser ? `Hi, ${currentUser.name}` : 'Profile'}
+                  Profile
                 </button>
+                <span className="user-greeting">
+                  Hi, {currentUser?.name || 'User'}!
+                </span>
                 <button 
                   onClick={handleLogout} 
                   className="nav-link"
-                  style={{border: 'none', background: 'none', cursor: 'pointer'}}
                 >
                   Logout
                 </button>
@@ -108,14 +81,12 @@ export default function Navbar() {
                 <button 
                   onClick={() => navigate('/login')} 
                   className="nav-link"
-                  style={{border: 'none', background: 'none', cursor: 'pointer'}}
                 >
                   Login
                 </button>
                 <button 
                   onClick={() => navigate('/register')} 
                   className="nav-link"
-                  style={{border: 'none', background: 'none', cursor: 'pointer'}}
                 >
                   Register
                 </button>

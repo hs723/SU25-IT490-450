@@ -216,6 +216,17 @@ function Registration() {
             required
           />
           
+          {/* Terms and conditions text */}
+          <div style={{
+            color: '#9ca3af',
+            fontSize: '0.75rem',
+            textAlign: 'center',
+            lineHeight: '1.4',
+            marginTop: '0.5rem'
+          }}>
+            By creating an account, you agree to our Terms of Service and Privacy Policy
+          </div>
+          
           <button 
             type="submit" 
             className="opacity"

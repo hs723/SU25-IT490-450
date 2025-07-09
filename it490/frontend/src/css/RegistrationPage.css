@@ -3,7 +3,7 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
   color: white;
-  overflow: hidden;
+  overflow-x: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   position: relative;
   display: flex;
@@ -18,7 +18,7 @@
   content: '';
   position: fixed;
   border-radius: 50%;
-  mix-blend-mode: multiply;
+  mix-blend-mode: screen;
   filter: blur(80px);
   opacity: 0.2;
   animation: pulse 4s ease-in-out infinite;
@@ -55,7 +55,7 @@
   height: 240px;
   background: #ec4899;
   border-radius: 50%;
-  mix-blend-mode: multiply;
+  mix-blend-mode: screen;
   filter: blur(80px);
   opacity: 0.2;
   animation: pulse 4s ease-in-out infinite;
@@ -65,8 +65,14 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.3; }
+  0%, 100% { 
+    opacity: 0.2; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.3; 
+    transform: scale(1.05);
+  }
 }
 
 .form-container {
@@ -74,24 +80,28 @@
   z-index: 10;
   width: 100%;
   max-width: 500px;
-  background: rgba(15, 23, 42, 0.3);
+  background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 24px;
   padding: 3rem 2rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .form-container h2 {
   font-size: 2rem;
-  font-weight: bold;
+  font-weight: 700;
   margin-bottom: 0.5rem;
   text-align: center;
-  background: linear-gradient(to right, #a78bfa, #22d3ee);
+  background: linear-gradient(135deg, #a78bfa, #22d3ee);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  display: inline-block;
+  width: 100%;
 }
 
 /* Add subtitle after h2 */
@@ -124,6 +134,7 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 .form-container input::placeholder {
@@ -137,13 +148,18 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.form-container input:hover {
+.form-container input:hover:not(:disabled) {
   border-color: rgba(168, 85, 247, 0.5);
+}
+
+.form-container input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .form-container button {
   padding: 1rem 2rem;
-  background: linear-gradient(to right, #7c3aed, #0891b2);
+  background: linear-gradient(135deg, #7c3aed, #0891b2);
   border: none;
   border-radius: 12px;
   color: white;
@@ -152,15 +168,39 @@
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 1rem;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
 }
 
-.form-container button:hover {
-  box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.25);
+.form-container button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.form-container button:hover:not(:disabled) {
+  box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.4);
   transform: translateY(-2px);
 }
 
-.form-container button:active {
+.form-container button:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.form-container button:active:not(:disabled) {
   transform: translateY(0);
+}
+
+.form-container button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Remove old opacity class styling */
@@ -168,23 +208,8 @@
   opacity: 1 !important;
 }
 
-/* Add terms text before button */
-.form-container form::after {
-  content: 'By creating an account, you agree to our Terms of Service and Privacy Policy';
-  color: #9ca3af;
-  font-size: 0.75rem;
-  text-align: center;
-  line-height: 1.4;
-  margin-top: -0.5rem;
-  order: 10; /* Place before button */
-}
-
-.form-container button {
-  order: 11; /* Place after terms */
-}
-
 /* Responsive Design */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .main-container {
     padding: 1rem;
   }
@@ -203,6 +228,10 @@
 }
 
 @media (max-width: 480px) {
+  .main-container {
+    overflow-y: auto;
+  }
+  
   .form-container {
     padding: 1.5rem 1rem;
     max-width: 100%;
@@ -211,35 +240,62 @@
   .form-container h2 {
     font-size: 1.5rem;
   }
+  
+  .form-container input {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .form-container button {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .form-container {
+    padding: 1rem 0.75rem;
+  }
+  
+  .form-container h2 {
+    font-size: 1.25rem;
+  }
 }
 
 .message {
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 1rem;
   text-align: center;
   font-weight: 500;
+  font-size: 0.875rem;
 }
 
 .message.success {
-  background-color: rgba(34, 197, 94, 0.1);
+  background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.3);
   color: #86efac;
 }
 
 .message.error {
-  background-color: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #fca5a5;
 }
 
-.form-container input:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.form-container button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .main-container::before,
+  .main-container::after,
+  .main-container .form-container::before {
+    animation: none;
+  }
+  
+  .form-container button {
+    transition: none;
+  }
+  
+  .form-container button:hover:not(:disabled) {
+    transform: none;
+  }
 }
