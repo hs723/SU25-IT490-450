@@ -3,7 +3,7 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
   color: white;
-  overflow: hidden;
+  overflow-x: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   position: relative;
 }
@@ -22,7 +22,7 @@
 .bg-orb {
   position: absolute;
   border-radius: 50%;
-  mix-blend-mode: multiply;
+  mix-blend-mode: screen;
   filter: blur(80px);
   opacity: 0.2;
   animation: pulse 4s ease-in-out infinite;
@@ -55,8 +55,14 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.3; }
+  0%, 100% { 
+    opacity: 0.2; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.3; 
+    transform: scale(1.05);
+  }
 }
 
 /* Login Section */
@@ -77,12 +83,14 @@
 }
 
 .form-container {
-  background: rgba(15, 23, 42, 0.3);
+  background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 24px;
   padding: 3rem 2rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .login-header {
@@ -92,19 +100,21 @@
 
 .login-title {
   font-size: 2rem;
-  font-weight: bold;
+  font-weight: 700;
   margin-bottom: 0.5rem;
-  background: linear-gradient(to right, #a78bfa, #22d3ee);
+  background: linear-gradient(135deg, #a78bfa, #22d3ee);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  display: inline-block;
 }
 
 .login-subtitle {
   color: #d1d5db;
   font-size: 1rem;
   opacity: 0.8;
+  margin: 0;
 }
 
 .error-message {
@@ -138,6 +148,7 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 .login-input::placeholder {
@@ -151,7 +162,7 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.login-input:hover {
+.login-input:hover:not(:disabled) {
   border-color: rgba(168, 85, 247, 0.5);
 }
 
@@ -161,7 +172,7 @@
 }
 
 .forgot-password {
-  text-align: right;
+  text-align: center;
   margin-top: -0.5rem;
 }
 
@@ -173,6 +184,8 @@
   cursor: pointer;
   text-decoration: none;
   transition: color 0.3s ease;
+  font-family: inherit;
+  padding: 0;
 }
 
 .link-button:hover {
@@ -182,7 +195,7 @@
 
 .login-submit-btn {
   padding: 1rem 2rem;
-  background: linear-gradient(to right, #7c3aed, #0891b2);
+  background: linear-gradient(135deg, #7c3aed, #0891b2);
   border: none;
   border-radius: 12px;
   color: white;
@@ -191,11 +204,29 @@
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 1rem;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
 }
 
 .login-submit-btn:hover:not(:disabled) {
-  box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.4);
   transform: translateY(-2px);
+}
+
+.login-submit-btn:hover:not(:disabled)::before {
+  left: 100%;
 }
 
 .login-submit-btn:active:not(:disabled) {
@@ -218,6 +249,7 @@
 .register-link p {
   color: #d1d5db;
   font-size: 0.875rem;
+  margin: 0;
 }
 
 .register-link .link {
@@ -228,6 +260,9 @@
   font-size: 0.875rem;
   margin-left: 0.5rem;
   transition: color 0.3s ease;
+  font-family: inherit;
+  padding: 0;
+  text-decoration: none;
 }
 
 .register-link .link:hover {
@@ -236,7 +271,7 @@
 }
 
 /* Responsive Design */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .login-section {
     padding: 6rem 1rem 3rem;
   }
@@ -255,11 +290,70 @@
 }
 
 @media (max-width: 480px) {
+  .login-container {
+    overflow-y: auto;
+  }
+  
+  .login-section {
+    padding: 4rem 1rem 2rem;
+    min-height: calc(100vh - 80px);
+  }
+  
   .form-container {
     padding: 1.5rem 1rem;
   }
   
   .login-title {
     font-size: 1.5rem;
+  }
+  
+  .login-input {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .login-submit-btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .bg-orb {
+    filter: blur(60px);
+  }
+  
+  .bg-orb-1, .bg-orb-2 {
+    width: 240px;
+    height: 240px;
+  }
+  
+  .bg-orb-3 {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+/* Fix for very small screens */
+@media (max-width: 320px) {
+  .form-container {
+    padding: 1rem 0.75rem;
+  }
+  
+  .login-title {
+    font-size: 1.25rem;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .bg-orb {
+    animation: none;
+  }
+  
+  .login-submit-btn {
+    transition: none;
+  }
+  
+  .login-submit-btn:hover:not(:disabled) {
+    transform: none;
   }
 }

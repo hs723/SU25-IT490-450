@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import '../css/LoginPage.css';
-import { useNavigate } from 'react-router-dom';
 
 function LoginPage() {
     const navigate = useNavigate();
@@ -50,16 +50,17 @@ function LoginPage() {
                 console.log('✅ LOGIN SUCCESS!');
                 
                 // Store user data
-                if (data.user) {
-                    localStorage.setItem('userData', JSON.stringify(data.user));
-                    localStorage.setItem('isLoggedIn', 'true');
-                    console.log('💾 User data stored');
-                }
+                localStorage.setItem('userData', JSON.stringify(data.user));
+                localStorage.setItem('isLoggedIn', 'true');
+                console.log('💾 User data stored');
+                
+                // Dispatch storage event to notify other components
+                window.dispatchEvent(new Event('storage'));
                 
                 alert(`Welcome back, ${data.user.name}!`);
                 
-                console.log('🚀 Navigating to home page...');
-                // Navigate to home page
+                console.log('🚀 Redirecting to home page...');
+                // Redirect to home page
                 navigate('/');
                 
             } else {
@@ -88,6 +89,12 @@ function LoginPage() {
 
     const handleRegisterClick = () => {
         navigate('/register');
+    };
+
+    const handleForgotPassword = () => {
+        // Add forgot password functionality here
+        console.log('Forgot password clicked');
+        // navigate('/forgot-password');
     };
 
     return (
@@ -145,7 +152,11 @@ function LoginPage() {
                             </div>
                             
                             <div className="forgot-password">
-                                <button type="button" className="link-button">
+                                <button 
+                                    type="button" 
+                                    className="link-button"
+                                    onClick={handleForgotPassword}
+                                >
                                     Forgot Password?
                                 </button>
                             </div>
