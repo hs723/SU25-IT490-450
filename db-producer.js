@@ -21,4 +21,4 @@ async function sendToVM(targetVM, payload) {
   setTimeout(() => connection.close(), 500);
 }
 
-sendToVM('MQ VM', { text: 'Hello VM2!' }).catch(console.error);
+sendToVM('dbvm', { text: 'Hello VM2!' }).catch(console.error);

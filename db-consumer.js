@@ -23,4 +23,4 @@ async function startConsumer(vmname) {
   });
 }
 
-startConsumer('insertvmname').catch(console.error);
+startConsumer('dbvm').catch(console.error);
