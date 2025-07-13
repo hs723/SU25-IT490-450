@@ -1,0 +1,1 @@
+CREATE DATABASE trivia_app;
