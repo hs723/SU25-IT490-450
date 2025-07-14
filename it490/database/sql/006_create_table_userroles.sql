@@ -1,0 +1,12 @@
+CREATE TABLE userroles
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    user_id INT,
+    role_id INT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (role_id) REFERENCES roles(id),
+    UNIQUE KEY (user_id, role_id)
+);
