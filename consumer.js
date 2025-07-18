@@ -37,7 +37,6 @@ async function checkUser(email) {
 
 async function registerUser(userData) {
   try {
-    // Check if user exists
     const [existing] = await dbConnection.execute(
       'SELECT * FROM users WHERE email = ? OR username = ?',
       [userData.email, userData.username]
@@ -46,8 +45,7 @@ async function registerUser(userData) {
     if (existing.length > 0) {
       return { success: false, error: 'User already exists' };
     }
-    
-    // Insert new user
+
     const [result] = await dbConnection.execute(
       'INSERT INTO users (username, email, password_hash, display_name) VALUES (?, ?, ?, ?)',
       [userData.username, userData.email, userData.password, userData.display_name]
@@ -85,27 +83,26 @@ async function startConsumer(vmname) {
 
         switch (data.type) {
           case 'register':
-            if (data.username && data.email && data.password && data.display_name) {
-              result = await registerUser(data);
-            } else {
-              result = { success: false, error: 'Missing required fields' };
-            }
-            break;
-
           case 'login':
-            if (data.email && data.password) {
-              result = await loginUser(data);
-            } else {
-              result = { success: false, error: 'Missing email or password' };
-            }
-            break;
-
           case 'checkUser':
-            if (data.email) {
-              result = await checkUser(data.email);
+            let dbResult;
+            if (data.type === 'register' && data.username && data.email && data.password && data.display_name) {
+              dbResult = await registerUser(data);
+            } else if (data.type === 'login' && data.email && data.password) {
+              dbResult = await loginUser(data);
+            } else if (data.type === 'checkUser' && data.email) {
+              dbResult = await checkUser(data.email);
             } else {
-              result = { success: false, error: 'Missing email' };
+              dbResult = { success: false, error: 'Missing required fields' };
             }
+
+            result = {
+              success: dbResult.success || false,
+              ...(dbResult.error && { error: dbResult.error }),
+              ...(dbResult.token && { token: dbResult.token }),
+              ...(dbResult.user && { user: dbResult.user }),
+              ...(dbResult.userId && { userId: dbResult.userId })
+            };
             break;
 
           default:
