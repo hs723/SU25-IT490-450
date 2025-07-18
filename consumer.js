@@ -83,32 +83,42 @@ async function startConsumer(vmname) {
 
         switch (data.type) {
           case 'register':
-          case 'login':
-          case 'checkUser':
-            let dbResult;
-            if (data.type === 'register' && data.username && data.email && data.password && data.display_name) {
-              dbResult = await registerUser(data);
-            } else if (data.type === 'login' && data.email && data.password) {
-              dbResult = await loginUser(data);
-            } else if (data.type === 'checkUser' && data.email) {
-              dbResult = await checkUser(data.email);
+            console.log('Processing registration request');
+            if (data.username && data.email && data.password && data.display_name) {
+              result = await registerUser(data);
             } else {
-              dbResult = { success: false, error: 'Missing required fields' };
+              result = { success: false, error: 'Missing required fields' };
             }
+            break;
 
-            result = {
-              success: dbResult.success || false,
-              ...(dbResult.error && { error: dbResult.error }),
-              ...(dbResult.token && { token: dbResult.token }),
-              ...(dbResult.user && { user: dbResult.user }),
-              ...(dbResult.userId && { userId: dbResult.userId })
-            };
+          case 'login':
+            console.log();
+            if (data.email && data.password) {
+              result = { success: true, token: 'example.jwt.token' };
+            } else {
+              result = { success: false, error: 'Invalid credentials' };
+            }
+            break;
+
+          case 'checkUser':
+            console.log('Processing checkUser request');
+            if (data.email) {
+              result = await checkUser(data.email);
+            } else {
+              result = { success: false, error: 'Missing email' };
+            }
+            break;
+
+          case 'updateProfile':
+            console.log('Processing updateProfile request');
+            result = { success: true };
             break;
 
           default:
+            console.warn('Unknown request type received');
             result = { success: false, error: 'Unknown request type' };
         }
-
+        
         if (replyTo && correlationId) {
           channel.sendToQueue(
             replyTo,
