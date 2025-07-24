@@ -1,5 +1,6 @@
 const amqp = require('amqplib');
 const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
 
 let dbConnection;
 
@@ -37,25 +38,117 @@ async function checkUser(email) {
 
 async function registerUser(userData) {
   try {
+    console.log('Checking for user');
     const [existing] = await dbConnection.execute(
       'SELECT * FROM users WHERE email = ? OR username = ?',
       [userData.email, userData.username]
     );
-    
+    console.log('User found in DB');
     if (existing.length > 0) {
+      console.log('User already exists in DB');
       return { success: false, error: 'User already exists' };
     }
-
+    console.log('Trying to insert data into DB');
     const [result] = await dbConnection.execute(
       'INSERT INTO users (username, email, password_hash, display_name) VALUES (?, ?, ?, ?)',
       [userData.username, userData.email, userData.password, userData.display_name]
     );
-    
+    console.log('Successfully added into DB');
     return { success: true, userId: result.insertId };
     
   } catch (error) {
     console.error('Registration error:', error);
     return { success: false, error: 'Registration failed' };
+  }
+}
+
+async function loginUser(loginData) {
+  try {
+    // Check if user exists in DB
+    // If so, hash the password and check to see if that password_hash matches the one in the DB
+    console.log('Checking for email in database');
+    const userResult = await checkUser(loginData.email);
+
+    if (!userResult.success) {
+      console.log('User not found');
+      return { success: false, message: 'Invalid username/email'};
+    }
+    console.log('User found successfully');
+
+    const passwordMatch = await bcrypt.compare(loginData.password, userResult.user.password_hash);
+    console.log('Login password (plain text): ', loginData.password);
+    console.log('Stored password hash:' , userResult.user.password_hash);
+
+    console.log('Comparing hashed login password with stored password');
+    if(passwordMatch) {
+      console.log('Password match. Login successful');
+      return { success: true, user: userResult.user};
+    } else {
+      console.log('Password do not match. Login failed');
+      return { success: false, message: 'Invalid credentials'};
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, error: 'Login failed'};
+  }
+}
+
+async function updateProfile(updateData) { //updateData is the object that gets passed to the updateProfile function
+  try {
+    if (!updateData.userId) {
+      console.log('Error: Missing userID');
+      return { success: false, error: 'User ID is required'};
+    }
+    
+    console.log('Building update query with provided fields');
+    // arrays used to dynamically build the SQL UPDATE query based on which fields the user wants to update
+    const updates = [];
+    const values = [];
+
+    if (updateData.username) {
+      console.log('Adding username to update:', updateData.username);
+      updates.push('username = ?');
+      values.push(updateData.username);
+    }
+    if (updateData.email) {
+      console.log('Adding email to update:', updateData.email);
+      updates.push('email = ?');
+      values.push(updateData.email);
+    }
+    if (updateData.password) {
+      // Has the password before storing
+      const hashedPassword = await bcrypt.hash(updateData.password, 10);
+      updates.push('password_hash = ?');
+      values.push(updateData.password);
+    }
+    if (updateData.display_name) {
+      console.log('Adding display name to update: ', updateData.display_name);
+      updates.push('display_name = ?');
+      values.push(updateData.display_name);
+    }
+
+    console.log('Fields to update:', updates);
+    console.log('Values to use:', values);
+
+    if (updates.length === 0) {
+      return { success: false, error: 'No fields to update' };
+    }
+
+    values.push(updateData.userId);
+    const query = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+
+    console.log('Executing database update...');
+    const [result] = await dbConnection.execute(query, values);
+    console.log('Database update result: ', result);
+    
+    if (result.afffectedRows === 0) {
+      return { success: false, error: 'User not found' };
+    }
+
+    return {success: true, message: 'Profile updated successfully'};
+  }catch (error) {
+    console.error('Update profile error:', error);
+    return { success: false, error: 'Failed to update profile' };
   }
 }
 
@@ -94,7 +187,7 @@ async function startConsumer(vmname) {
           case 'login':
             console.log();
             if (data.email && data.password) {
-              result = { success: true, token: 'example.jwt.token' };
+              result = await loginUser(data)
             } else {
               result = { success: false, error: 'Invalid credentials' };
             }
@@ -111,7 +204,11 @@ async function startConsumer(vmname) {
 
           case 'updateProfile':
             console.log('Processing updateProfile request');
-            result = { success: true };
+            if (data.userId) {
+              result = await updateProfile(data)
+            } else {
+              result = { success: false, error: 'Missing user ID' };
+            }
             break;
 
           default:
