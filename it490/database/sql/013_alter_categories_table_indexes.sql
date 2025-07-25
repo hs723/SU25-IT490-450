@@ -1,0 +1,1 @@
+CREATE INDEX idx_categories_active ON categories(is_active);

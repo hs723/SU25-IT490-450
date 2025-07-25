@@ -1,0 +1,1 @@
+ALTER TABLE roles CHANGE id role_id INT AUTO_INCREMENT;
