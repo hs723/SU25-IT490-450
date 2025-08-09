@@ -266,6 +266,181 @@ async function handleLeaderboard(leaderboardData) {
   }
 }
 
+async function handleScores(scoreData) {
+  try {
+    console.log('Processing scores request');
+
+    if (scoreData.action === 'add') {
+      console.log('Adding new score for user: ', scoreData.user_id);
+
+      //Insert new score record
+      const [result] = await dbConnection.execute(`
+        INSERT INTO scores 
+        (user_id, category_id, score_points, total_questions, correct_answers, time_taken, is_completed) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, [
+        scoreData.user_id,
+        scoreData.category_id || null,
+        scoreData.score_points || 0,
+        scoreData.total_questions || 0,
+        scoreData.correct_answers || 0,
+        scoreData.time_taken || 0,
+        scoreData.is_completed !== undefined ? scoreData.is_completed : true
+      ]);
+
+      console.log('Score added successfully with ID: ', result.insertId);
+      return {
+        success: true,
+        scoreId: result.insertId,
+        message: 'Score saved successfully'
+      };
+    } else if (scoreData.action === 'get') {
+      console.log('Retrieving score data');
+
+      //Build query based on filters
+      let query = `
+        SELECT s.*, u.username, u.display_name, c.name as category_name
+        FROM scores s 
+        JOIN users u ON s.user_id = u.user_id
+        LEFT JOIN categories c ON s.category_id = c.category_id
+      `;
+      let params = [];
+      let whereConditions = [];
+
+      if (scoreData.user_id) {
+        console.log('Filtering by user ID: ', scoreData.user_id);
+        whereConditions.push('s.user_id = ?');
+        params.push(scoreData.user_id);
+      }
+      if (scoreData.category_id) {
+        console.log('Filtering by category: ', scoreData.category_id);
+        whereConditions.push('s.category_id = ?');
+        params.push(scoreData.category_id);
+      }
+      if (scoreData.is_completed !== undefined) {
+        console.log('Filtering by completion status: ', scoreData.is_completed);
+        whereConditions.push('s,is_completed = ?');
+        params.push(scoreData.is_completed);
+      }
+      if (scoreData.min_score) {
+        console.log('Filtering by minimum score: ', scoreData.min_score);
+        whereConditions.push('s.min_score >= ?');
+        params.push(scoreData.min_score);
+      }
+      if (whereConditions.length > 0) {
+        query += ' WHERE ' + whereConditions.join(' AND ');
+      }
+
+      //Order by score points descending, then by most recent
+      query += ' ORDER BY s.score_points DESC, s.created_at DESC LIMIT ?';
+      params.push(scoreData.limit || 20);
+
+      console.log('Executing scores query');
+      const [rows] = await dbConnection.execute(query, params);
+
+      console.log(`Retrieved ${rows.length} score entries`);
+      return {
+        success: true,
+        scores: rows,
+        count: rows.length,
+        message: 'Scores data retreived successfully'
+      };
+    } else if (scoreData.action === 'stats') {
+      console.log('Getting user statistics for user; ', scoreData.user_id);
+
+      if (!scoreData.user_id) {
+        return { success: false, message: 'User ID required for stats' };
+      }
+
+      //Get user statistics
+      const [stats] = await dbConnection.execute(`
+        SELECT 
+          COUNT(*) as total_games,
+          COUNT(CASE WHEN is_completed = 1 THEN 1 END) as completed_games,
+          AVG(score_points) as average_score,
+          MAX(score_points) as best_score,
+          MIN(score_points) as worst_score,
+          SUM(correct_answers) as total_correct,
+          SUM(total_questions) as total_questions,
+          AVG(CASE WHEN total_questions > 0 THEN (correct_answers / total_questions * 100) END) as average_percentage,
+          AVG(time_taken) as average_time,
+          MIN(time_taken) as fastest_time,
+          MAX(time_taken) as slowest_time
+        FROM scores 
+        WHERE user_id = ?
+      `, [scoreData.user_id]);
+      
+      console.log('User statistics retrieved successfully');
+      return {
+        success: true,
+        stats: stats[0],
+        message: 'User statistics retrieved successfully'
+      };
+    } else if (scoreData.action === 'recent') {
+      console.log('Getting recent scores for user: ', scoreData.user_id);
+
+      if (!scoreData.user_id) {
+        return { success: false, error: 'User ID required for recent scores' };
+      }
+
+      //Get users recent scores
+      const [recentScores] = await dbConnection.execute(`
+        SELECT s.*, c.name as category_name
+        FROM scores s
+        LEFT JOIN categories c ON s.category_id = c.category_id
+        WHERE s.user_id = ?
+        ORDER BY s.created_at DESC
+        LIMIT ?
+      `, [scoreData.user_id, scoreData.limit || 10]);
+
+      console.log(`Retrieved ${recentScores.length} recent scores`);
+      return {
+        success: true,
+        recent_scores: recentScores,
+        count: recentScores.length,
+        message: 'Recent scores retrieved successfully'
+      };
+    } else if (scoreData.action === 'top') {
+      console.log('Getting top scores');
+
+      // Get top scores (leaderboard style)
+      let query = `
+        SELECT s.*, u.username, u.display_name, c.name as category_name
+        FROM scores s
+        JOIN users u ON s.user_id = u.user_id
+        LEFT JOIN categories c ON s.category_id = c.category_id
+        WHERE s.is_completed = 1
+      `;
+      let params = [];
+
+      if (scoreData.category_id) {
+        console.log('Filtering top scores by category:', scoreData.category_id);
+        query += ' AND s.category_id = ?';
+        params.push(scoreData.category_id);
+      }
+      
+      query += ' ORDER BY s.score_points DESC, s.time_taken ASC LIMIT ?';
+      params.push(scoreData.limit || 10);
+      
+      const [topScores] = await dbConnection.execute(query, params);
+      
+      console.log(`Retrieved ${topScores.length} top scores`);
+      return {
+        success: true,
+        top_scores: topScores,
+        count: topScores.length,
+        message: 'Top scores retrieved successfully'
+      };
+    } else {
+      console.log('Invalid scores action:', scoreData.action);
+      return { success: false, error: 'Invalid scores action' };
+    }
+  } catch (error) {
+    console.error('Scores error:', error);
+    return { success: false, error: 'Failed to process scores request', details: error.message };
+  }
+}
+
 async function startConsumer(vmname) {
   try {
     await connectToDatabase();
