@@ -325,6 +325,26 @@ async function startConsumer(vmname) {
             }
             break;
 
+          case 'leaderboard':
+            console.log('Processing leaderboard request');
+            if (data.action) {
+              result = await handleLeaderboard(data);
+              console.log(result);
+            } else {
+              result = { success: false, error: 'Missing leaderboard action' };
+            }
+            break;
+          
+          case 'scores':
+            console.log('Processing scores request');
+            if (data.action) {
+              result = await handleScores(data);
+              console.log(result);
+            } else {
+              result = { success: false, error: 'Missing scores action' };
+            }
+            break;
+
           default:
             console.warn('Unknown request type received');
             result = { success: false, error: 'Unknown request type' };
