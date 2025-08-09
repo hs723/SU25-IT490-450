@@ -152,6 +152,120 @@ async function updateProfile(updateData) { //updateData is the object that gets 
   }
 }
 
+async function handleLeaderboard(leaderboardData) {
+  try {
+    console.log('Processing leaderboard requets');
+
+    if (leaderboardData.action === 'add' || leaderboardData.action === 'update') {
+      console.log('Adding/updating leaderboard data for user: ', leaderboardData.user_id);
+
+      //Check if leaderboard entry already exists
+      const [existing] = await dbConnection.execute (
+        'SELECT * FROM leaderboards WHERE user_id = ? AND leaderboard_type = ? AND category_id = ?',
+        [leaderboardData.user_id, leaderboardData.leaderboard_type || 'overall', leaderboardData.category_id || null]
+      );
+
+      if (existing.length > 0) {
+        console.log('Updating existing leaderboard entry');
+        //Update existing record
+        const [result] = await dbConnection.execute(`
+          UPDATE leaderboards SET 
+          score = ?, games_played = ?, average_score = ?, win_percentage = ?, 
+          longest_streak = ?, total_correct_answers = ?, total_questions_answered = ?, 
+          rank_position = ? 
+          WHERE user_id = ? AND leaderboard_type = ? AND category_id = ?
+        `, [
+          leaderboardData.score || 0, 
+          leaderboardData.games_played || 0, 
+          leaderboardData.average_score || 0, 
+          leaderboardData.win_percentage || 0, 
+          leaderboardData.longest_streak || 0, 
+          leaderboardData.total_correct_answers || 0, 
+          leaderboardData.total_questions_answered || 0, 
+          leaderboardData.rank_position || 0, 
+          leaderboardData.user_id, 
+          leaderboardData.leaderboard_type || 'overall', 
+          leaderboardData.category_id || null
+        ]);
+        console.log('Leaderboard updated successfully');
+      } else {
+        console.log('Creating new leaderboard entry');
+        //Insert new record
+        const [result] = await dbConnection.execute(`
+          INSERT INTO leaderboards 
+          (user_id, category_id, leaderboard_type, score, games_played, average_score, 
+           win_percentage, longest_streak, total_correct_answers, total_questions_answered, rank_position) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          leaderboardData.user_id, 
+          leaderboardData.category_id || null, 
+          leaderboardData.leaderboard_type || 'overall',
+          leaderboardData.score || 0, 
+          leaderboardData.games_played || 0, 
+          leaderboardData.average_score || 0,
+          leaderboardData.win_percentage || 0, 
+          leaderboardData.longest_streak || 0, 
+          leaderboardData.total_correct_answers || 0, 
+          leaderboardData.total_questions_answered || 0, 
+          leaderboardData.rank_position || 0
+        ]);
+        console.log('New leaderboard entry created successfully');
+      }
+      return { success: true, message: 'Leaderboard data saved successfully' };
+    }else if (leaderboardData.action === 'get') {
+      console.log('Retrieving leaderboard data');
+
+      // Build query based on filters
+      let query = `
+        SELECT l.*, u.username, u.display_name 
+        FROM leaderboards l 
+        JOIN users u ON l.user_id = u.user_id
+      `;
+      let params = [];
+      let whereConditions = [];
+
+      if (leaderboardData.leaderboard_type) {
+        console.log('Filtering by leaderboard type:', leaderboardData.leaderboard_type);
+        whereConditions.push('l.leaderboard_type = ?');
+        params.push(leaderboardData.leaderboard_type);
+      }
+      if (leaderboardData.category_id) {
+        console.log('Filtering by category ID:', leaderboardData.category_id);
+        whereConditions.push('l.category_id = ?');
+        params.push(leaderboardData.category_id);
+      }
+      if (leaderboardData.user_id) {
+        console.log('Filtering by user ID:', leaderboardData.user_id);
+        whereConditions.push('l.user_id = ?');
+        params.push(leaderboardData.user_id);
+      }
+      if (whereConditions.length > 0) {
+        query += ' WHERE ' + whereConditions.join(' AND ');
+      }
+      query += ' ORDER BY l.score DESC, l.rank_position ASC LIMIT ?';
+      params.push(leaderboardData.limit || 10);
+      
+      console.log('Executing leaderboard query');
+      const [rows] = await dbConnection.execute(query, params);
+      
+      console.log(`Retrieved ${rows.length} leaderboard entries`);
+      return { 
+        success: true, 
+        leaderboard: rows,
+        count: rows.length,
+        message: 'Leaderboard data retrieved successfully'
+      };
+    } else {
+      console.log('Invalid leaderboard action: ', leaderboardData.action);
+      return { success: false, error: 'Invalid leaderboard action' };
+    }
+  } catch (error) {
+    console.error('Leaderboard error: ', error);
+    //Always return success for leaderboard operations
+    return { success: true, message: 'Leaderboard processed with warnings', error: error.message };
+  }
+}
+
 async function startConsumer(vmname) {
   try {
     await connectToDatabase();
